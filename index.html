@@ -5,226 +5,475 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Convertisseur Minutes/Heures</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a6fd8;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-card: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
         body {
             width: 100vw;
             height: 100vh;
-            background: #000;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: white;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-primary);
             overflow: hidden;
             touch-action: manipulation;
+            position: relative;
+        }
+
+        /* Animated background elements */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(118, 75, 162, 0.05) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(2deg); }
         }
 
         .app-container {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
-            background: radial-gradient(circle, #1a1a2e 0%, #000 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            padding: 32px 24px;
+            width: 100%;
+            max-width: 380px;
+            animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .title {
-            font-size: 1.2em;
-            color: #00d4ff;
-            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             text-align: center;
+            margin-bottom: 32px;
+            line-height: 1.2;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.2); }
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            font-size: 14px;
+            font-weight: 400;
+            margin-bottom: 32px;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out 0.3s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
         }
 
         .input-section {
-            width: 90%;
-            max-width: 250px;
-            margin-bottom: 15px;
+            margin-bottom: 24px;
         }
 
-        .input-row {
+        .input-group {
+            position: relative;
             display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
+            gap: 12px;
             align-items: center;
         }
 
         .minutes-input {
             flex: 1;
-            padding: 8px;
-            border: 2px solid #333;
-            border-radius: 8px;
-            background: #222;
-            color: white;
-            font-size: 1em;
+            padding: 16px 20px;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 500;
             text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        .minutes-input::placeholder {
+            color: var(--text-secondary);
+            font-weight: 400;
         }
 
         .minutes-input:focus {
-            outline: none;
-            border-color: #00d4ff;
-            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
         }
 
         .add-btn {
-            padding: 8px 12px;
-            background: #00d4ff;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             border: none;
-            border-radius: 8px;
-            color: black;
-            font-weight: bold;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
             cursor: pointer;
-            font-size: 1.1em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .add-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .add-btn:hover::before {
+            left: 100%;
         }
 
         .add-btn:active {
             transform: scale(0.95);
-            background: #0099cc;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .values-container {
+            margin-bottom: 24px;
+        }
+
+        .values-header {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            opacity: 0.8;
         }
 
         .values-list {
-            width: 90%;
-            max-width: 250px;
-            max-height: 80px;
+            max-height: 120px;
             overflow-y: auto;
-            margin-bottom: 15px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-            padding: 5px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+        }
+
+        .values-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .values-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .values-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 2px;
         }
 
         .value-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 5px;
-            margin: 2px 0;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            font-size: 0.9em;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideInRight 0.3s ease-out;
+            transition: background-color 0.2s ease;
+        }
+
+        .value-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .value-item:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .delete-btn {
-            background: #ff4757;
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
             border: none;
             color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            border-radius: 8px;
+            width: 28px;
+            height: 28px;
             cursor: pointer;
-            font-size: 0.8em;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:active {
+            transform: scale(0.9);
         }
 
         .total-section {
-            width: 90%;
-            max-width: 250px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
             text-align: center;
-            background: rgba(0, 212, 255, 0.1);
-            border: 2px solid #00d4ff;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .total-minutes {
-            font-size: 1.1em;
-            color: #ccc;
+        .total-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .total-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 8px;
         }
 
+        .total-minutes {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-weight: 400;
+        }
+
         .total-hours {
-            font-size: 1.5em;
-            color: #00d4ff;
-            font-weight: bold;
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
         }
 
         .controls {
             display: flex;
-            gap: 10px;
-        }
-
-        .control-btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: bold;
+            gap: 12px;
+            justify-content: center;
         }
 
         .clear-btn {
-            background: #ff4757;
-            color: white;
+            padding: 12px 24px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         .clear-btn:active {
-            background: #cc3644;
             transform: scale(0.95);
+            background: rgba(239, 68, 68, 0.2);
         }
 
-        /* Responsive pour petits écrans */
-        @media (max-width: 300px) {
-            .title { font-size: 1em; }
-            .minutes-input { font-size: 0.9em; }
-            .total-hours { font-size: 1.3em; }
-            .app-container { padding: 15px; }
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+            padding: 24px;
+            font-style: italic;
         }
 
-        /* Scrollbar pour la liste */
-        .values-list::-webkit-scrollbar {
-            width: 4px;
+        /* Responsive design */
+        @media (max-width: 400px) {
+            .app-container {
+                padding: 16px;
+            }
+            
+            .glass-card {
+                padding: 24px 20px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .total-hours {
+                font-size: 28px;
+            }
         }
 
-        .values-list::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
+        @media (max-height: 700px) {
+            .glass-card {
+                padding: 24px 20px;
+            }
+            
+            .title {
+                margin-bottom: 24px;
+            }
+            
+            .subtitle {
+                margin-bottom: 24px;
+            }
+            
+            .values-list {
+                max-height: 100px;
+            }
         }
 
-        .values-list::-webkit-scrollbar-thumb {
-            background: #00d4ff;
-            border-radius: 2px;
+        /* Animations pour les interactions */
+        .pulse-animation {
+            animation: pulse 0.6s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .success-flash {
+            animation: successFlash 0.5s ease-in-out;
+        }
+
+        @keyframes successFlash {
+            0% { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); }
+            50% { background: linear-gradient(135deg, var(--success) 0%, #059669 100%); }
+            100% { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <div class="title">Convertisseur<br>Minutes → Heures</div>
-        
-        <div class="input-section">
-            <div class="input-row">
-                <input 
-                    type="number" 
-                    class="minutes-input" 
-                    id="minutesInput" 
-                    placeholder="Minutes"
-                    min="0"
-                    step="1"
-                >
-                <button class="add-btn" onclick="addMinutes()">+</button>
+        <div class="glass-card">
+            <h1 class="title">Convertisseur<br>Minutes → Heures</h1>
+            <p class="subtitle">Additionnez vos minutes et obtenez le total en heures</p>
+            
+            <div class="input-section">
+                <div class="input-group">
+                    <input 
+                        type="number" 
+                        class="minutes-input" 
+                        id="minutesInput" 
+                        placeholder="Entrez les minutes"
+                        min="0"
+                        step="1"
+                    >
+                    <button class="add-btn" onclick="addMinutes()">+</button>
+                </div>
             </div>
-        </div>
 
-        <div class="values-list" id="valuesList">
-            <!-- Les valeurs ajoutées apparaîtront ici -->
-        </div>
-
-        <div class="total-section">
-            <div class="total-minutes">
-                Total: <span id="totalMinutes">0</span> minutes
+            <div class="values-container">
+                <div class="values-header">Valeurs ajoutées</div>
+                <div class="values-list" id="valuesList">
+                    <div class="empty-state">Aucune valeur ajoutée</div>
+                </div>
             </div>
-            <div class="total-hours" id="totalHours">
-                0h 00min
-            </div>
-        </div>
 
-        <div class="controls">
-            <button class="control-btn clear-btn" onclick="clearAll()">
-                Tout effacer
-            </button>
+            <div class="total-section">
+                <div class="total-label">Total calculé</div>
+                <div class="total-minutes">
+                    <span id="totalMinutes">0</span> minutes au total
+                </div>
+                <div class="total-hours" id="totalHours">
+                    0h 00min
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="clear-btn" onclick="clearAll()">
+                    🗑️ Tout effacer
+                </button>
+            </div>
         </div>
     </div>
 
@@ -240,12 +489,28 @@
                 input.value = '';
                 updateDisplay();
                 
-                // Animation rapide du bouton
+                // Animation de succès
                 const btn = document.querySelector('.add-btn');
-                btn.style.background = '#00ff88';
+                btn.classList.add('success-flash');
                 setTimeout(() => {
-                    btn.style.background = '#00d4ff';
-                }, 200);
+                    btn.classList.remove('success-flash');
+                }, 500);
+                
+                // Animation de la section totale
+                const totalSection = document.querySelector('.total-section');
+                totalSection.classList.add('pulse-animation');
+                setTimeout(() => {
+                    totalSection.classList.remove('pulse-animation');
+                }, 600);
+            } else {
+                // Animation d'erreur pour l'input
+                const input = document.getElementById('minutesInput');
+                input.style.borderColor = 'var(--danger)';
+                input.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
+                setTimeout(() => {
+                    input.style.borderColor = 'transparent';
+                    input.style.boxShadow = 'none';
+                }, 1000);
             }
         }
 
@@ -255,33 +520,43 @@
         }
 
         function clearAll() {
-            minutesArray = [];
-            updateDisplay();
+            if (minutesArray.length > 0) {
+                minutesArray = [];
+                updateDisplay();
+                
+                // Animation de feedback
+                const clearBtn = document.querySelector('.clear-btn');
+                clearBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    clearBtn.style.transform = 'scale(1)';
+                }, 150);
+            }
         }
 
         function updateDisplay() {
-            // Mise à jour de la liste des valeurs
             const valuesList = document.getElementById('valuesList');
-            valuesList.innerHTML = '';
             
-            minutesArray.forEach((minutes, index) => {
-                const item = document.createElement('div');
-                item.className = 'value-item';
-                item.innerHTML = `
-                    <span>${minutes} min</span>
-                    <button class="delete-btn" onclick="removeMinutes(${index})">×</button>
-                `;
-                valuesList.appendChild(item);
-            });
+            if (minutesArray.length === 0) {
+                valuesList.innerHTML = '<div class="empty-state">Aucune valeur ajoutée</div>';
+            } else {
+                valuesList.innerHTML = '';
+                
+                minutesArray.forEach((minutes, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'value-item';
+                    item.innerHTML = `
+                        <span>${minutes} min</span>
+                        <button class="delete-btn" onclick="removeMinutes(${index})" title="Supprimer">×</button>
+                    `;
+                    valuesList.appendChild(item);
+                });
+            }
 
-            // Calcul du total
+            // Calcul et affichage du total
             const totalMinutes = minutesArray.reduce((sum, minutes) => sum + minutes, 0);
-            
-            // Conversion en heures et minutes
             const hours = Math.floor(totalMinutes / 60);
             const remainingMinutes = totalMinutes % 60;
             
-            // Mise à jour de l'affichage
             document.getElementById('totalMinutes').textContent = totalMinutes;
             
             let hoursText;
@@ -296,26 +571,61 @@
             document.getElementById('totalHours').textContent = hoursText;
         }
 
-        // Gestion de l'entrée clavier
+        // Gestion des événements
         document.getElementById('minutesInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 addMinutes();
             }
         });
 
-        // Focus automatique sur l'input au chargement
+        // Focus automatique et sélection du texte
         window.addEventListener('load', function() {
-            document.getElementById('minutesInput').focus();
+            const input = document.getElementById('minutesInput');
+            setTimeout(() => {
+                input.focus();
+            }, 100);
         });
 
-        // Gestion tactile pour améliorer l'expérience
+        // Gestion tactile optimisée
+        let touchStartTime = 0;
         document.addEventListener('touchstart', function(e) {
-            // Empêcher le zoom sur double tap
-            e.preventDefault();
+            touchStartTime = Date.now();
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            const touchDuration = Date.now() - touchStartTime;
+            if (touchDuration < 300) {
+                // Tap rapide, pas de zoom
+                e.preventDefault();
+            }
         }, { passive: false });
 
         // Initialisation
         updateDisplay();
+
+        // Animation au scroll pour les petits écrans
+        let ticking = false;
+        function updateScrollEffect() {
+            const valuesList = document.getElementById('valuesList');
+            const scrollTop = valuesList.scrollTop;
+            const maxScroll = valuesList.scrollHeight - valuesList.clientHeight;
+            
+            if (maxScroll > 0) {
+                const scrollPercent = scrollTop / maxScroll;
+                valuesList.style.background = `linear-gradient(to bottom, 
+                    rgba(255,255,255,${0.02 + scrollPercent * 0.03}) 0%, 
+                    rgba(255,255,255,0.02) 100%)`;
+            }
+            
+            ticking = false;
+        }
+
+        document.getElementById('valuesList').addEventListener('scroll', function() {
+            if (!ticking) {
+                requestAnimationFrame(updateScrollEffect);
+                ticking = true;
+            }
+        });
     </script>
 </body>
 </html>
