@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Convertisseur Minutes/Heures</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .app-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1a1a2e 0%, #000 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .title {
+            font-size: 1.2em;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .input-section {
+            width: 90%;
+            max-width: 250px;
+            margin-bottom: 15px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .minutes-input {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #222;
+            color: white;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .minutes-input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .add-btn {
+            padding: 8px 12px;
+            background: #00d4ff;
+            border: none;
+            border-radius: 8px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+
+        .add-btn:active {
+            transform: scale(0.95);
+            background: #0099cc;
+        }
+
+        .values-list {
+            width: 90%;
+            max-width: 250px;
+            max-height: 80px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .value-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            margin: 2px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .total-section {
+            width: 90%;
+            max-width: 250px;
+            text-align: center;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid #00d4ff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .total-minutes {
+            font-size: 1.1em;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+
+        .total-hours {
+            font-size: 1.5em;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .clear-btn {
+            background: #ff4757;
+            color: white;
+        }
+
+        .clear-btn:active {
+            background: #cc3644;
+            transform: scale(0.95);
+        }
+
+        /* Responsive pour petits écrans */
+        @media (max-width: 300px) {
+            .title { font-size: 1em; }
+            .minutes-input { font-size: 0.9em; }
+            .total-hours { font-size: 1.3em; }
+            .app-container { padding: 15px; }
+        }
+
+        /* Scrollbar pour la liste */
+        .values-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .values-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+
+        .values-list::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="title">Convertisseur<br>Minutes → Heures</div>
+        
+        <div class="input-section">
+            <div class="input-row">
+                <input 
+                    type="number" 
+                    class="minutes-input" 
+                    id="minutesInput" 
+                    placeholder="Minutes"
+                    min="0"
+                    step="1"
+                >
+                <button class="add-btn" onclick="addMinutes()">+</button>
+            </div>
+        </div>
+
+        <div class="values-list" id="valuesList">
+            <!-- Les valeurs ajoutées apparaîtront ici -->
+        </div>
+
+        <div class="total-section">
+            <div class="total-minutes">
+                Total: <span id="totalMinutes">0</span> minutes
+            </div>
+            <div class="total-hours" id="totalHours">
+                0h 00min
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn clear-btn" onclick="clearAll()">
+                Tout effacer
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let minutesArray = [];
+
+        function addMinutes() {
+            const input = document.getElementById('minutesInput');
+            const minutes = parseInt(input.value);
+            
+            if (!isNaN(minutes) && minutes > 0) {
+                minutesArray.push(minutes);
+                input.value = '';
+                updateDisplay();
+                
+                // Animation rapide du bouton
+                const btn = document.querySelector('.add-btn');
+                btn.style.background = '#00ff88';
+                setTimeout(() => {
+                    btn.style.background = '#00d4ff';
+                }, 200);
+            }
+        }
+
+        function removeMinutes(index) {
+            minutesArray.splice(index, 1);
+            updateDisplay();
+        }
+
+        function clearAll() {
+            minutesArray = [];
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            // Mise à jour de la liste des valeurs
+            const valuesList = document.getElementById('valuesList');
+            valuesList.innerHTML = '';
+            
+            minutesArray.forEach((minutes, index) => {
+                const item = document.createElement('div');
+                item.className = 'value-item';
+                item.innerHTML = `
+                    <span>${minutes} min</span>
+                    <button class="delete-btn" onclick="removeMinutes(${index})">×</button>
+                `;
+                valuesList.appendChild(item);
+            });
+
+            // Calcul du total
+            const totalMinutes = minutesArray.reduce((sum, minutes) => sum + minutes, 0);
+            
+            // Conversion en heures et minutes
+            const hours = Math.floor(totalMinutes / 60);
+            const remainingMinutes = totalMinutes % 60;
+            
+            // Mise à jour de l'affichage
+            document.getElementById('totalMinutes').textContent = totalMinutes;
+            
+            let hoursText;
+            if (hours === 0) {
+                hoursText = `${remainingMinutes}min`;
+            } else if (remainingMinutes === 0) {
+                hoursText = `${hours}h`;
+            } else {
+                hoursText = `${hours}h ${remainingMinutes.toString().padStart(2, '0')}min`;
+            }
+            
+            document.getElementById('totalHours').textContent = hoursText;
+        }
+
+        // Gestion de l'entrée clavier
+        document.getElementById('minutesInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addMinutes();
+            }
+        });
+
+        // Focus automatique sur l'input au chargement
+        window.addEventListener('load', function() {
+            document.getElementById('minutesInput').focus();
+        });
+
+        // Gestion tactile pour améliorer l'expérience
+        document.addEventListener('touchstart', function(e) {
+            // Empêcher le zoom sur double tap
+            e.preventDefault();
+        }, { passive: false });
+
+        // Initialisation
+        updateDisplay();
+    </script>
+</body>
+</html>
